@@ -1,0 +1,32 @@
+body{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#root{
+    width: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.row{
+    padding: 0;
+    border: 0;
+    width: 100%;
+}
+Form{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+}
+h1{
+    margin: 50px 0 50px 0 ;
+}
+button:active{
+    scale: 1.1;
+    transition: ease-in-out;
+}
