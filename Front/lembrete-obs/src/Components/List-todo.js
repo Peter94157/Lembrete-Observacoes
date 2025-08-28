@@ -7,12 +7,16 @@ import Button from 'react-bootstrap/Button';
 import { useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
+import Form from 'react-bootstrap/Form';
 
 function TabsExample({ lembrete }) {
     const itens = Array.isArray(lembrete) ? lembrete : Object.values(lembrete ?? {});
     const [doneItems, setDoneItems] = useState({});
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
+    const [obs, setObs] = useState(""); // <- texto da observação
+    const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const handleCheck = (id) => {
         setDoneItems(prev => ({
@@ -21,12 +25,52 @@ function TabsExample({ lembrete }) {
         }));
     };
 
-    const handleEdit = (item) => {
+    const handleEdit = async (item) => {
+        console.log(item.contador)
         setSelectedItem(item);
         setShowModal(true);
+        setLoading(true);
+        try {
+            const res = await fetch(`http://localhost:5000/lembretes/${item.contador}/observacoes`);
+            const data = await res.json();
+            console.log(data)
+            setObs(data[0]?.texto || "");
+        } catch (err) {
+            console.error("Erro ao buscar observação:", err);
+            setObs("Erro ao carregar observação");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleClose = () => setShowModal(false);
+    const handleClose = () => {
+        setShowModal(false);
+        setObs("");
+    };
+
+    const handleSave = async () => {
+        if (!selectedItem) {
+            console.log(selectedItem);
+            return
+        }
+
+        console.log(selectedItem);
+        setSaving(true);
+        try {
+            await fetch(`http://localhost:5000/lembretes/${selectedItem.contador}/observacoes`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ texto: obs })
+            });
+            setShowModal(false); // fecha modal ao salvar
+        } catch (err) {
+            console.error("Erro ao salvar observação:", err);
+        } finally {
+            setSaving(false);
+        }
+    };
 
     return (
         <>
@@ -72,21 +116,36 @@ function TabsExample({ lembrete }) {
                 </Row>
             </Tab.Container>
 
-            {/* Modal/Card de observação */}
+            {/* Modal de observação */}
             <Modal show={showModal} onHide={handleClose} centered>
                 <Modal.Header closeButton>
-                    <Modal.Title>Observação</Modal.Title>
+                    <Modal.Title>Editar Observação</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Card>
-                        <Card.Body>
-                            <Card.Title>Lembrete #{selectedItem?.contador}</Card.Title>
-                            <Card.Text>{selectedItem?.texto}</Card.Text>
-                            {/* Aqui você pode adicionar um campo para editar a observação */}
-                        </Card.Body>
-                    </Card>
+                    {loading ? (
+                        <p>Carregando observação...</p>
+                    ) : (
+                        <Card>
+                            <Card.Body>
+                                <Form>
+                                    <Form.Group>
+                                        <Form.Label>Texto da observação</Form.Label>
+                                        <Form.Control
+                                            as="textarea"
+                                            rows={3}
+                                            value={obs}
+                                            onChange={(e) => setObs(e.target.value)}
+                                        />
+                                    </Form.Group>
+                                </Form>
+                            </Card.Body>
+                        </Card>
+                    )}
                 </Modal.Body>
                 <Modal.Footer>
+                    <Button variant="primary" onClick={handleSave} disabled={saving}>
+                        {saving ? "Salvando..." : "Salvar"}
+                    </Button>
                     <Button variant="secondary" onClick={handleClose}>
                         Fechar
                     </Button>

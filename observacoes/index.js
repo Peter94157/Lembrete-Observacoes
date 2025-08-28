@@ -1,12 +1,15 @@
 const express = require ('express');
+const cors = require("cors")
 const bodyParser = require('body-parser');
 const app = express();
+
 const { v4: uuidv4 } = require('uuid');
 
 observacoesPorLembreteId = {};
 
 
 app.use(bodyParser.json());
+app.use(cors())
 
  //:id é um placeholder
  //exemplo: /lembretes/123456/observacoes
