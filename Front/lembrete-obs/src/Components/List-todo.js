@@ -14,7 +14,7 @@ function TabsExample({ lembrete }) {
     const [doneItems, setDoneItems] = useState({});
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
-    const [obs, setObs] = useState(""); // <- texto da observação
+    const [obs, setObs] = useState("");
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
@@ -26,15 +26,16 @@ function TabsExample({ lembrete }) {
     };
 
     const handleEdit = async (item) => {
-        console.log(item.contador)
+        console.log("contador:", item.contador)
         setSelectedItem(item);
         setShowModal(true);
         setLoading(true);
         try {
             const res = await fetch(`http://localhost:5000/lembretes/${item.contador}/observacoes`);
             const data = await res.json();
-            console.log(data)
+
             setObs(data[0]?.texto || "");
+
         } catch (err) {
             console.error("Erro ao buscar observação:", err);
             setObs("Erro ao carregar observação");
@@ -54,7 +55,7 @@ function TabsExample({ lembrete }) {
             return
         }
 
-        console.log(selectedItem);
+        console.log("obsID", obs);
         setSaving(true);
         try {
             await fetch(`http://localhost:5000/lembretes/${selectedItem.contador}/observacoes`, {
